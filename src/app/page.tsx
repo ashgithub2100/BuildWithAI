@@ -13,7 +13,13 @@ import { CheckCircle2, RotateCcw, Cpu } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export default function HomePage() {
-  const { fsmState, _hasHydrated, telemetry, resetSession } = useAnchorStore();
+  const { fsmState, _hasHydrated, setHasHydrated, telemetry, resetSession } = useAnchorStore();
+  const [mounted, setMounted] = React.useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setHasHydrated(true);
+  }, [setHasHydrated]);
 
   // Attach passive resistance telemetry (tab-switches & 45s idle monitor)
   usePassiveResistance();
@@ -38,7 +44,7 @@ export default function HomePage() {
   }, [fsmState]);
 
   // SSR Hydration Guard
-  if (!_hasHydrated) {
+  if (!mounted || !_hasHydrated) {
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center font-mono text-xs text-ink-muted">
         <div className="flex items-center gap-2">
