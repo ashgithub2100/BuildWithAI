@@ -5,3 +5,11 @@
 .env
 .env.*
 !.env.example
+
+# Next.js and Dependencies
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts

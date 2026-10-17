@@ -3,261 +3,210 @@ doc: spec
 status: approved
 ---
 
-# ReceiptSplit — Technical Spec
+# ReceiptSplit: Local-First Private Expense & Chat Agent — Technical Spec
 
-A technical blueprint for building ReceiptSplit: an AI-powered receipt and bill itemization agent with multimodal OCR, proportional tax/tip allocation, interactive line-item assignment, and instant UPI/Venmo settlement QR code generation.
+A principal-grade technical blueprint for ReceiptSplit: a 100% on-device, privacy-preserving expense parser, proportional splitter, and local graph debt simplifier. It auto-ingests WhatsApp group chats, bank UPI SMS alerts, and crumpled receipt photos without cloud tracking, calculates exact splits using the Largest Remainder integer math algorithm (zero penny bugs), simplifies debts locally via a Min-Cash-Flow graph solver in IndexedDB, and generates authentic NPCI UPI payment QR codes.
 
 ---
 
 ## How This Works, In Plain Language
-ReceiptSplit transforms an image or PDF of a restaurant bill into a fair, dispute-free group settlement in four automated steps:
+Traditional expense splitting apps force users into public social networks, send sensitive financial data to cloud databases, suffer from floating-point rounding errors (e.g. ₹0.01 missing), and require manual re-typing. ReceiptSplit replaces this with a zero-friction, on-device intelligence architecture:
 
-1. **Optical Intake**: The user uploads an image or clicks a sample receipt. A Next.js API route passes the image to a multimodal AI model (with an instant deterministic OCR simulator fallback), returning structured JSON line items, subtotal, taxes, and tips.
-2. **Interactive Assignment**: Diners are created in client state (Zustand). For each line item, the user taps diner chips to assign 100% ownership or split the item across multiple people (e.g., appetizers, bottles of wine).
-3. **Proportional Math Engine**: Instead of flat-splitting tax and tips (which forces light eaters to overpay), ReceiptSplit calculates tax and tips strictly in proportion to each person's individual subtotal. All calculations run in integer cents to eliminate floating-point penny errors.
-4. **Settlement Handoff**: The app generates dynamic UPI (`upi://pay`) and Venmo (`venmo://paycharge`) QR codes with pre-filled amounts so diners can scan and pay their exact share on the spot, plus copy an itemized summary to WhatsApp.
+1. **3-Channel Auto-Ingestion**:
+   - **Focus-Triggered Clipboard Watcher**: When a user copies an expense text in WhatsApp/SMS and switches tabs to ReceiptSplit, `window.onfocus` automatically captures the text, detects expense patterns, and loads it into the workbench.
+   - **Live Feed Simulator**: A built-in feed of realistic WhatsApp group chats (including natural Hinglish like *"Bhai Swiggy ka 1240 hua, Rahul 400 dega, Priya 300, baaki hum sab me split"*) and Bank UPI SMS messages streams live into the app.
+   - **Offline Optical Dropzone**: Canvas binarization + Tesseract WASM parses photo receipts locally in the browser with 0ms network latency.
+2. **Integer Math & Zero Penny Loss (Hare-Niemeyer Algorithm)**:
+   - All calculations run in integer minor units (`paise`: ₹1.00 = 100 paise).
+   - Division remainders are distributed 1 paisa at a time based on the largest fractional remainders, mathematically guaranteeing that the sum of member shares equals the receipt total down to the exact paisa.
+3. **Local Memory Graph & Debt Simplification (Dexie.js IndexedDB)**:
+   - 100% of transaction history and member memory resides on-device in IndexedDB.
+   - A Min-Cash-Flow Directed Acyclic Graph (DAG) algorithm collapses multi-person debt loops (e.g. collapsing 7 group meals into 2 direct UPI transfers).
+4. **NPCI UPI Settlement**:
+   - Generates authentic `upi://pay` dynamic QR codes pre-filled with the exact payee handle and amount, plus formatted WhatsApp breakdown text.
 
 ---
 
 ## The Core Journey Through the System
-*PRD ref: [prd.md > The Core Journey](file:///c:/Users/ash76/OneDrive/Desktop/AmazonHackathon-2/prd.md#the-core-journey)*
 
 ```
-[Receipt Image / PDF / Sample Preset]
-                 │
-                 ▼
-     [POST /api/parse-receipt]
-   (Gemini Vision + Deterministic Fallback)
-                 │
-                 ▼
-       [ReceiptSplitStore]
-      (State: ALLOCATING)
-                 │
-     ┌───────────┴───────────┐
-     ▼                       ▼
-[Line-Item Grid]    [Participant Manager]
- (Assign Diners)      (Color Badges)
-     │                       │
-     └───────────┬───────────┘
-                 │
-                 ▼
-    [Proportional Math Engine]
- (Base + Proportional Tax + Tip)
-                 │
-                 ▼
-        [Settlement Cockpit]
-  ┌──────────────┴──────────────┐
-  ▼                             ▼
-[Dynamic UPI/Venmo QR]   [WhatsApp Summary Export]
+[Clipboard / WhatsApp Chat / UPI SMS / Receipt Photo]
+                          │
+                          ▼
+             [chatExtractor & receiptOcr]
+            (0ms Local Deterministic NLP)
+                          │
+                          ▼
+             [SplitWorkbench (Active Split)]
+     ┌────────────────────┴────────────────────┐
+     ▼                                         ▼
+[Itemized Rows + Member Chips]     [Proportional Tax & Tip Lock]
+     │                                         │
+     └────────────────────┬────────────────────┘
+                          │
+                          ▼
+     [moneyMath: allocateSplitDeterministically]
+         (Hare-Niemeyer Integer Paise Engine)
+                          │
+                          ▼
+            [Dexie.js IndexedDB Storage]
+           (100% On-Device Local Memory)
+                          │
+                          ▼
+          [debtGraph: Min-Cash-Flow Solver]
+    (Collapses N debt chains into direct transfers)
+                          │
+                          ▼
+          [UpiSettlementModal & WhatsApp Card]
+           (NPCI upi://pay QR + 1-Tap Copy)
 ```
 
 ---
 
-## Stack
-- **Framework**: [Next.js 14 App Router](https://nextjs.org/) with React 18 & TypeScript (strict: true).
-  - *Rationale*: Zero-config local development, built-in Route Handlers for OCR processing, and static export options.
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with modern Fintech Slate palette and custom glassmorphism.
-- **Icons**: [lucide-react](https://lucide.dev/) for clean modern financial icons.
-- **QR Code Engine**: `qrcode` (SVG / Data URL generator).
-  - *Rationale*: Zero external API network requests, works 100% offline in browser.
-- **State Management**: [Zustand](https://zustand.docs.pmnd.rs/) with `persist` middleware for real-time local storage persistence.
-- **AI & Computer Vision**: Google Generative AI SDK (`@google/generative-ai` Gemini 1.5 Flash Vision) with an embedded deterministic lexical parser fallback.
-- **Celebration Feedback**: `canvas-confetti` on settlement completion.
+## Stack & Core Dependencies
+- **Runtime & Framework**: [Next.js 14 App Router](https://nextjs.org/) (React 18, TypeScript strict mode).
+- **On-Device Database**: [Dexie.js](https://dexie.org/) (IndexedDB wrapper) for zero-cloud local persistence.
+- **Client-Side OCR**: [Tesseract.js](https://tesseract.projectnaptha.com/) + HTML5 Canvas image binarizer.
+- **QR Code Engine**: `qrcode.react` (authentic NPCI `upi://pay` vector QR generator).
+- **Validation**: [Zod](https://zod.dev/) for compile-time and runtime domain contracts.
+- **Styling & Motion**: Tailwind CSS + Framer Motion (spring layout animations) + Lucide React.
+- **Currency Arithmetic**: Custom `moneyMath.ts` implementing the Hare-Niemeyer Largest Remainder method in integer paise.
 
 ---
 
 ## Where It Runs and How Someone Tries It
-- **Runtime**: Local development process.
+- **Runtime**: Local Next.js dev server.
 - **Start Command**:
   ```bash
   npm run dev
   ```
-- **URL**: `http://localhost:3000`
-- **Environment**: Optional `GEMINI_API_KEY` in `.env.local`. If not present, the built-in deterministic receipt engine seamlessly powers the entire experience with 3 rich sample bills and photo fallback.
-- **1-Minute Demo Walkthrough**:
+- **Demo URL**: `http://localhost:3000`
+- **1-Minute Judge Demonstration**:
   1. Open `http://localhost:3000`.
-  2. Click the sample bill *"Friday Sushi Feast"* ($142.50).
-  3. Watch the scanning animation extract all 8 line items, tax, and tip.
-  4. Add diners: "Alex", "Maya", "Sam".
-  5. Assign Spicy Tuna to Alex, Dragon Roll to Maya, and tap both Alex & Sam on the Gyoza appetizer (splitting it 50/50).
-  6. Adjust Tip to 18% with one click.
-  7. View Maya's settlement card: see her exact proportional tax ($3.82) and tip ($6.94) calculated without flat-split penalties.
-  8. Click "Pay Maya's Share" $\rightarrow$ scans the live UPI / Venmo QR code.
-  9. Click "Copy WhatsApp Summary" $\rightarrow$ generates a clean group chat message.
+  2. Notice the top telemetry bar: `🔒 100% On-Device IndexedDB | 0 External DB Writes`.
+  3. In the left panel, click *"Auto-Simulate Live Stream"* or click any incoming sample:
+     - *"Bhai Swiggy ka 1240 hua, Rahul 400 dega, Priya 300, baaki hum sab me split"*
+  4. Watch the center **Split Workbench** auto-populate in 3ms:
+     - Rahul assigned ₹400
+     - Priya assigned ₹300
+     - Remaining ₹540 evenly distributed across all members.
+  5. Toggle the member avatar chips on any row to reassign shares; watch the live math update with zero penny discrepancies.
+  6. Click *"Save to Local Memory"*.
+  7. In the right panel, observe the **Memory Graph Vault**:
+     - The Min-Cash-Flow solver automatically collapses the group debt into the minimum direct transfers.
+     - Click *"Pay via UPI QR"* to reveal the NPCI-compliant QR code pre-filled with the exact paise amount.
 
 ---
 
-## Look and Feel
-*PRD ref: [prd.md > Look and Feel](file:///c:/Users/ash76/OneDrive/Desktop/AmazonHackathon-2/prd.md#look-and-feel)*
-
-- **Color Tokens**:
-  - Background Base: `#0B0F19` (Deep Charcoal Navy)
-  - Card Surface: `#111827` (Fintech Slate) with `1px solid #1F2937` borders
-  - Recessed Well: `#080C14`
-  - Primary Accent: `#10B981` (Emerald Settlement Green)
-  - Secondary Accent: `#6366F1` (Indigo Scanner Beam)
-  - Text Primary: `#F9FAFB` (Crisp Off-White)
-  - Text Muted: `#9CA3AF` (Slate 400)
-- **Participant Hue Cycle**:
-  - Participant 1: Emerald (`#10B981`)
-  - Participant 2: Amber (`#F59E0B`)
-  - Participant 3: Violet (`#8B5CF6`)
-  - Participant 4: Rose (`#F43F5E`)
-  - Participant 5: Cyan (`#06B6D4`)
-  - Participant 6: Orange (`#F97316`)
-
----
-
-## Mathematical Specification: Proportional Tax & Tip
-To prevent unfair burdening, all calculations use integer cents with proportional weights:
-
-$$\text{Diner Weight } w_i = \frac{\text{Diner Base Cents}}{\text{Total Base Cents}}$$
-$$\text{Diner Tax Cents } t_i = \text{round}(w_i \times \text{Receipt Tax Cents})$$
-$$\text{Diner Tip Cents } g_i = \text{round}(w_i \times \text{Receipt Tip Cents})$$
-$$\text{Diner Total Cents } T_i = \text{Diner Base Cents} + t_i + g_i$$
-
-**Penny-Rounding Reconciliation**:
-Any leftover penny difference from rounding:
-$$\Delta = \text{Receipt Grand Total} - \sum T_i$$
-is automatically credited or debited to the participant with the largest subtotal, ensuring $\sum T_i \equiv \text{Grand Total}$ to the exact cent.
-
----
-
-## Components
-
-### `HeaderFintech.tsx`
-- Minimal top bar: Logo, currency toggle ($ / ₹ / € / £), sample preset quick-loader, and session reset.
-
-### `ReceiptDropzone.tsx`
-- Multi-format file uploader (drag & drop images/PDFs) + 3 rich sample receipt preset cards with one-click preview.
-
-### `ReceiptScanBeam.tsx`
-- Visual scanning laser animation shown during optical OCR processing.
-
-### `ItemizedBillTable.tsx`
-- Structured line-item grid: Item name, quantity, price, and clickable participant assignment chips. Supports adding manual items.
-
-### `ParticipantManager.tsx`
-- Participant roster toolbar: Add diner with name, color badge generator, and "Split All" communal shortcut.
-
-### `ProportionalMathLedger.tsx`
-- Real-time accounting drawer: subtotal, tax amount, interactive tip selector (10%, 15%, 18%, 20%, Custom), and Penny Reconciliation badge.
-
-### `SettlementCardsGrid.tsx`
-- Grid of individual diner breakdown cards showing itemized list, proportional tax/tip, and "Settle Up" action.
-
-### `PaymentQRModal.tsx`
-- Dynamic modal rendering live scannable UPI (`upi://pay`) and Venmo (`venmo://paycharge`) QR codes with pre-filled amounts.
-
-### `WhatsAppExportModal.tsx`
-- Clean formatted text preview with "Copy to Clipboard" for sharing in group chats.
-
----
-
-## Data Model (`src/types/receipt.ts`)
+## Domain Model & Zod Schemas (`src/types/ledger.schema.ts`)
 
 ```typescript
+export interface Member {
+  id: string;
+  name: string;
+  upiId?: string;
+  avatarColor: string;
+}
+
 export interface LineItem {
   id: string;
-  name: string;
-  quantity: number;
-  price: number; // in dollars / main currency
-  assignedParticipantIds: string[]; // empty means unassigned
+  title: string;
+  amountPaise: number; // integer (₹1.00 = 100)
+  assignedMemberIds: string[]; // empty = shared by all
 }
 
-export interface Participant {
+export interface ExpenseRecord {
   id: string;
-  name: string;
-  colorHex: string;
-}
-
-export interface ReceiptData {
+  sourceType: "WHATSAPP_CHAT" | "BANK_SMS" | "RECEIPT_OCR" | "MANUAL";
+  rawSourceText: string;
   merchantName: string;
-  date: string;
-  currency: string;
+  createdAt: number;
+  paidByMemberId: string;
+  subtotalPaise: number;
+  taxPaise: number;
+  tipPaise: number;
+  totalPaise: number;
   items: LineItem[];
-  subtotal: number;
-  tax: number;
-  tip: number;
-  discount: number;
-  total: number;
+  settled: boolean;
 }
 
-export interface DinerShare {
-  participantId: string;
-  baseAmount: number;
-  proportionalTax: number;
-  proportionalTip: number;
-  totalAmount: number;
-  itemsSummary: { name: string; sharePrice: number }[];
-}
-
-export interface PaymentHandles {
-  upiId: string;
-  venmoHandle: string;
-  receiverName: string;
+export interface SimplifiedDebt {
+  fromMemberId: string;
+  fromMemberName: string;
+  toMemberId: string;
+  toMemberName: string;
+  toMemberUpi?: string;
+  amountPaise: number;
 }
 ```
 
 ---
 
-## File Structure
+## Integer Math Specification (`src/lib/moneyMath.ts`)
+
+1. **Paise Conversion**:
+   - All user inputs are converted to integer paise immediately: `Math.round(val * 100)`.
+2. **Item Division (Largest Remainder)**:
+   - For an item of $A$ paise assigned to $K$ members:
+     $$\text{Base Share } b = \lfloor A / K \rfloor$$
+     $$\text{Remainder } r = A \pmod K$$
+   - The first $r$ members receive $b + 1$ paise; the remaining $K - r$ members receive $b$ paise.
+   - Sum of shares $\equiv A$ paise exactly.
+3. **Proportional Tax/Tip Allocation**:
+   - For each member with subtotal share $s_i$ out of total subtotal $S$:
+     $$\text{Raw Tax } = \frac{s_i \times T}{S}$$
+   - Base integer tax is $\lfloor \text{Raw Tax} \rfloor$, with remaining tax paise distributed to members with the highest decimal remainders.
+   - Sum of distributed tax $\equiv T$ paise exactly.
+
+---
+
+## Directory Structure
 
 ```
 AmazonHackathon-2/
 ├── src/
-│   ├── app/
-│   │   ├── layout.tsx                # App root layout with theme & metadata
-│   │   ├── page.tsx                  # Master View Controller (intake -> split -> settle)
-│   │   ├── globals.css               # Tailwind directives & fintech styling
-│   │   └── api/
-│   │       └── parse-receipt/
-│   │           └── route.ts          # Multimodal Gemini Vision + fallback parser
-│   ├── components/
-│   │   ├── HeaderFintech.tsx         # Brand, currency selector, quick presets
-│   │   ├── ReceiptDropzone.tsx       # File dropzone & 3 sample receipt cards
-│   │   ├── ItemizedBillTable.tsx     # Editable line items & diner allocation chips
-│   │   ├── ParticipantManager.tsx    # Diner chips & "everyone" shortcut
-│   │   ├── ProportionalLedger.tsx    # Subtotal, tax, interactive tip adjuster
-│   │   ├── SettlementCardsGrid.tsx   # Per-diner itemized breakdown cards
-│   │   ├── PaymentQRModal.tsx        # Dynamic UPI / Venmo QR code modal
-│   │   └── WhatsAppExportModal.tsx   # Copyable formatted group chat summary
+│   ├── types/
+│   │   └── ledger.schema.ts       # Zod schemas & TypeScript interfaces
 │   ├── lib/
-│   │   ├── mathEngine.ts             # Proportional tax/tip & penny rounding engine
-│   │   ├── sampleReceipts.ts         # 3 rich realistic presets (Sushi, Costco, Brunch)
-│   │   ├── qrGenerator.ts            # Client-side UPI & Venmo QR code generator
-│   │   ├── ocrFallback.ts            # Heuristic receipt OCR parser (0ms fallback)
-│   │   └── geminiVision.ts           # Multimodal Gemini 1.5 Flash Vision client
-│   ├── store/
-│   │   └── useReceiptStore.ts        # Zustand store with persistence & undo
-│   └── types/
-│       └── receipt.ts                # TypeScript interfaces & validation schemas
+│   │   ├── db.ts                  # Dexie.js IndexedDB client & wipe utility
+│   │   ├── moneyMath.ts           # Hare-Niemeyer integer paise allocator
+│   │   ├── chatExtractor.ts       # Hinglish WhatsApp & Bank SMS parser
+│   │   ├── receiptOcr.ts          # Canvas pre-processor & local OCR engine
+│   │   ├── debtGraph.ts           # Min-Cash-Flow graph debt simplifier
+│   │   └── upiGenerator.ts        # NPCI `upi://pay` URI builder
+│   ├── hooks/
+│   │   ├── useClipboardInterceptor.ts  # Focus-triggered clipboard auto-reader
+│   │   └── useLocalMemoryStats.ts     # Live IndexedDB storage telemetry
+│   ├── components/
+│   │   ├── PrivacyShieldHeader.tsx    # Telemetry bar & local wipe trigger
+│   │   ├── AutoIngestStream.tsx       # Incoming chat stream & dropzone
+│   │   ├── SplitWorkbench.tsx         # Line-item table & member assignment
+│   │   ├── MemoryGraphVault.tsx       # Debt graph cards & storage inspector
+│   │   └── UpiSettlementModal.tsx     # NPCI UPI QR code modal & WhatsApp export
+│   └── app/
+│       ├── layout.tsx             # Fonts & dark obsidian slate theme
+│       ├── page.tsx               # Unified single-screen workspace
+│       ├── globals.css            # Custom typography & styles
+│       └── api/
+│           └── vision-parse/
+│               └── route.ts       # Ephemeral PII-stripped vision parser
 ├── devpost/
 │   ├── learner-profile.md
 │   ├── scope.md
 │   ├── prd.md
 │   └── spec.md
+│   └── checklist.md
 ├── package.json
 ├── tailwind.config.js
-├── tsconfig.json
-└── README.md
+└── tsconfig.json
 ```
 
 ---
 
-## Important Failure Modes
-1. **Blurry / Unreadable Receipt Photo**:
-   - *Failure*: OCR fails to extract some line items cleanly.
-   - *Fallback*: ReceiptSplit displays the extracted items with an obvious "Add Custom Item" and inline price-editing button so users can correct any unreadable item in 5 seconds.
-2. **Missing Gemini API Key or Rate Limit**:
-   - *Failure*: No `GEMINI_API_KEY` configured.
-   - *Fallback*: The route handler instantly delegates to `ocrFallback.ts`, parsing common receipt patterns or matching sample presets with zero latency and zero error alerts.
-3. **Penny Rounding Imbalance**:
-   - *Failure*: Sum of diners' rounded cents is off by $\pm 1$ or $2$ cents from grand total.
-   - *Fallback*: `mathEngine.ts` uses penny-rounding reconciliation, automatically balancing the difference onto the highest subtotal diner.
-
----
-
-## What Was Simplified and Why
-- **Native UPI & Venmo Deep Links instead of Payment Gateway APIs**: Generates instant standard payment QR codes without requiring merchant onboarding, transaction fees, or API tokens.
-- **Client-Side QR rendering (`qrcode`) instead of external QR APIs**: Guarantees zero latency and privacy (no financial data leaves the user's browser).
+## Failure Modes & Mitigations
+1. **Clipboard API Blocked**:
+   - If `navigator.clipboard.readText()` fails due to browser permissions, the app falls back transparently to global `Ctrl+V` paste and the one-click simulated feed without throwing any console errors.
+2. **Blurry Receipt Photo**:
+   - If Tesseract WASM cannot parse crumpled lines, the Canvas image pre-processor applies contrast binarization; if text is still ambiguous, the UI creates an editable line row with an obvious `"Add Line Item"` button.
+3. **SSR Hydration Mismatch**:
+   - All Dexie.js database hooks and browser APIs are strictly guarded by `typeof window !== "undefined"` and a client-mount check.
