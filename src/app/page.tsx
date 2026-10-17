@@ -5,11 +5,21 @@ import { useAnchorStore } from "@/store/useAnchorStore";
 import { HeaderTelemetry } from "@/components/HeaderTelemetry";
 import { BrainDumpTerminal } from "@/components/BrainDumpTerminal";
 import { ActiveAnchorStage } from "@/components/ActiveAnchorStage";
+import { AvoidanceInterceptor } from "@/components/AvoidanceInterceptor";
+import { VaultSealBar } from "@/components/VaultSealBar";
+import { usePassiveResistance } from "@/hooks/usePassiveResistance";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { CheckCircle2, RotateCcw, Cpu } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export default function HomePage() {
   const { fsmState, _hasHydrated, telemetry, resetSession } = useAnchorStore();
+
+  // Attach passive resistance telemetry (tab-switches & 45s idle monitor)
+  usePassiveResistance();
+
+  // Attach global keyboard shortcuts ([Enter], [Space], [V], [Esc])
+  useKeyboardShortcuts();
 
   // Fire celebratory confetti when session is marked complete
   useEffect(() => {
@@ -40,12 +50,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col justify-between relative bg-canvas">
       {/* Top Telemetry Header */}
       <HeaderTelemetry />
 
       {/* Main View Controller Canvas */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12 z-10 w-full">
+        {/* Avoidance Warning & Friction Interceptor (Displays during focus) */}
+        <AvoidanceInterceptor />
+
         {/* State 1: DUMP MODE */}
         {fsmState === "DUMP_MODE" && <BrainDumpTerminal />}
 
@@ -89,7 +102,7 @@ export default function HomePage() {
               <div className="text-left">
                 <span className="text-ink-muted text-[10px] uppercase block">Steps Cleared</span>
                 <span className="text-ink-primary font-bold text-base">
-                  {telemetry.completedCount}
+                  +{telemetry.completedCount}
                 </span>
               </div>
               <div className="text-left">
@@ -111,10 +124,13 @@ export default function HomePage() {
         )}
       </main>
 
+      {/* Sealed Vault Drawer Bar (Collapsible Pill at bottom) */}
+      <VaultSealBar />
+
       {/* Footer System Status */}
       <footer className="w-full border-t border-surface-border/50 py-3 px-6 text-[11px] font-mono text-ink-muted flex items-center justify-between">
         <div>ANCHOR // PROOF OF CONCEPT</div>
-        <div>ZERO CLUSTER • RULE OF ONE</div>
+        <div>ZERO CLUTTER • RULE OF ONE</div>
       </footer>
     </div>
   );

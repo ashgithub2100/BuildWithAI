@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Open http://localhost:3000, click "Load Demo Brain Dump", select "FRIED", click "Anchor Me", and experience the noise vanishing into the single-task stage.
   Commit: `Build BrainDumpTerminal, HeaderTelemetry, and ActiveAnchorStage`
 
-- [ ] **4. Passive Resistance Telemetry Hook, AvoidanceInterceptor, Shrink Circuit-Breaker, and VaultSealBar**
+- [x] **4. Passive Resistance Telemetry Hook, AvoidanceInterceptor, Shrink Circuit-Breaker, and VaultSealBar**
   Becomes usable: Procrastination telemetry is active: tab-switching (`document.visibilityState`) and 45s idle stalls automatically trigger the amber circuit-breaker prompt. Pressing `Space` slices tasks in half down to 15s atomic actions and pushes remainders onto the LIFO stack. Pressing `Enter` snaps the task complete with Web Audio clicks. Pressing `V` inspects the sealed vault with an intentional friction confirmation.
   Why now: Completes the full anti-procrastination circuit-breaker loop, edge cases, and sensory gratification.
   PRD ref: `prd.md > Features and Behavior > 5. Avoidance Detection & The Circuit-Breaker`, `prd.md > 6. Momentum Engine & Dopamine Micro-Loop`
