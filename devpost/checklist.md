@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Verify the project builds cleanly with `npm run build` with zero TypeScript errors.
   Commit: `Scaffold Next.js project, domain schemas, sound engine, and heuristic parser`
 
-- [ ] **2. LLM Route Handlers (`/api/deconstruct` and `/api/shrink`) & Hybrid LIFO/FIFO Store (`useAnchorStore.ts`)**
+- [x] **2. LLM Route Handlers (`/api/deconstruct` and `/api/shrink`) & Hybrid LIFO/FIFO Store (`useAnchorStore.ts`)**
   Becomes usable: API routes accept raw dumps, detect avoidance tasks, calibrate by energy (FRIED/STEADY/WIRED), and recursively shrink tasks. The Zustand store manages the FSM (`DUMP_MODE` -> `CALIBRATING` -> `ANCHOR_LOCKED` -> `SHRINKING` -> `SESSION_COMPLETE`) with LIFO Execution Stack and FIFO Vault Queue.
   Why now: Implements the cognitive brain and dual-queue state machine before connecting user-facing components.
   PRD ref: `prd.md > Features and Behavior > 4. Microscopic Task Breakdown Engine`, `prd.md > 5. Avoidance Detection & The Circuit-Breaker`
