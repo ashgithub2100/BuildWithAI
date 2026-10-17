@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Verify the test script passes with 100% mathematical precision (zero penny errors) and clean schema validation.
   Commit: `Scaffold Next.js project, integer paise engine, chat extractor, and Dexie IndexedDB`
 
-- [ ] **2. PrivacyShieldHeader and AutoIngestStream (Clipboard auto-reader & Live notification simulator)**
+- [x] **2. PrivacyShieldHeader and AutoIngestStream (Clipboard auto-reader & Live notification simulator)**
   Becomes usable: Top telemetry bar with live IndexedDB storage stats and local wipe trigger. Left panel auto-ingest stream featuring focus-triggered clipboard auto-reader, global `Ctrl+V` paste listener, live incoming WhatsApp/SMS feed simulator, and receipt drag-and-drop.
   Why now: Provides the zero-friction ingestion pipeline so data immediately flows into the workbench.
   PRD ref: `prd.md > The Core Journey` (step 1), `prd.md > Features and Behavior > 1. Multimodal OCR & Receipt Parsing Engine`
