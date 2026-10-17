@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Test API endpoints with curl/fetch and observe proper structured JSON and queue initialization.
   Commit: `Implement deconstruct & shrink route handlers and hybrid LIFO/FIFO store`
 
-- [ ] **3. BrainDumpTerminal, HeaderTelemetry, and The Rule-of-One ActiveAnchorStage**
+- [x] **3. BrainDumpTerminal, HeaderTelemetry, and The Rule-of-One ActiveAnchorStage**
   Becomes usable: Full user-facing loop. User can type or click "Load Demo Brain Dump", toggle hardware energy switches (`FRIED`, `STEADY`, `WIRED`), click "Anchor Me", hear the relay click, and enter the Rule-of-One focus stage displaying only the active task, countdown timer, stack depth badges (`[SHRINK DEPTH: L0]`), and keyboard shortcuts.
   Why now: Delivers the core visual experience and the Rule of One cockpit.
   PRD ref: `prd.md > The Core Journey` (steps 1-4), `prd.md > Look and Feel`, `prd.md > Screens and Layout`
