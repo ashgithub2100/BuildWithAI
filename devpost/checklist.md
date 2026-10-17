@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Assign an appetizer to multiple members, watch their individual shares compute, and save to local memory.
   Commit: `Implement SplitWorkbench with interactive member assignments and proportional math`
 
-- [ ] **4. MemoryGraphVault, NPCI UPI QR Generator, and unified page integration**
+- [x] **4. MemoryGraphVault, NPCI UPI QR Generator, and unified page integration**
   Becomes usable: Right panel local memory vault displaying spending stats, simplified Min-Cash-Flow debts, dynamic NPCI `upi://pay` QR codes in `UpiSettlementModal.tsx`, and 1-click WhatsApp summary export. Full application builds cleanly with `npm run build`.
   Why now: Completes the full end-to-end loop from ingestion to settlement.
   PRD ref: `prd.md > Features and Behavior > 4. Dynamic Payment QR Code Generation`, `prd.md > 5. Group Chat Export`
@@ -51,8 +51,8 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — Slice 2 (Live notification stream & clipboard auto-capture)
-- [ ] Final kick-the-tires exploration and feedback completed — Slice 4 (Full end-to-end local-first workspace)
+- [x] Early usable behavior explored — Slice 2 (Live notification stream & clipboard auto-capture)
+- [x] Final kick-the-tires exploration and feedback completed — Slice 4 (Full end-to-end local-first workspace)
 
 ## Final Review
 

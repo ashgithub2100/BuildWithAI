@@ -38,6 +38,15 @@ export function getDB(): ReceiptSplitDB | null {
   return dbInstance;
 }
 
+export async function seedInitialMembers(): Promise<void> {
+  const db = getDB();
+  if (!db) return;
+  const count = await db.members.count();
+  if (count === 0) {
+    await db.members.bulkAdd(INITIAL_MEMBERS);
+  }
+}
+
 export async function wipeLocalDatabase(): Promise<void> {
   const db = getDB();
   if (!db) return;
