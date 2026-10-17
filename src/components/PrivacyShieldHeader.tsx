@@ -10,7 +10,7 @@ interface PrivacyShieldHeaderProps {
   userUpiId: string;
   onUpdateUserUpiId: (upi: string) => void;
   onClearData: () => void;
-  onExportJson: () => void;
+  onOpenExportModal: () => void;
 }
 
 export const PrivacyShieldHeader: React.FC<PrivacyShieldHeaderProps> = ({
@@ -20,7 +20,7 @@ export const PrivacyShieldHeader: React.FC<PrivacyShieldHeaderProps> = ({
   userUpiId,
   onUpdateUserUpiId,
   onClearData,
-  onExportJson,
+  onOpenExportModal,
 }) => {
   const [isEditingUpi, setIsEditingUpi] = useState(false);
   const [tempUpi, setTempUpi] = useState(userUpiId);
@@ -136,12 +136,12 @@ export const PrivacyShieldHeader: React.FC<PrivacyShieldHeaderProps> = ({
           {/* Export & Reset Actions */}
           <div className="flex items-center gap-1 pl-1">
             <button
-              onClick={onExportJson}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-[#1E293B] hover:bg-[#334155] text-gray-200 border border-gray-700 text-xs transition-colors"
-              title="Inspect or download encrypted local JSON backup"
+              onClick={onOpenExportModal}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1E293B] hover:bg-[#334155] text-gray-200 border border-gray-700 text-xs transition-colors shadow-sm"
+              title="Export statement in Excel CSV, plain text, or JSON format"
             >
-              <Download className="w-3 h-3 text-gray-300" />
-              <span className="hidden md:inline">Export JSON</span>
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline font-mono">Export (Excel / Text)</span>
             </button>
             <button
               onClick={onClearData}

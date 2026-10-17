@@ -6,6 +6,7 @@ import { AutoIngestStream } from "@/components/AutoIngestStream";
 import { SplitWorkbench } from "@/components/SplitWorkbench";
 import { MemoryGraphVault } from "@/components/MemoryGraphVault";
 import { UpiSettlementModal } from "@/components/UpiSettlementModal";
+import { ExportLedgerModal } from "@/components/ExportLedgerModal";
 import { useClipboardInterceptor } from "@/hooks/useClipboardInterceptor";
 import { useLocalMemoryStats } from "@/hooks/useLocalMemoryStats";
 import { getDB, seedInitialMembers } from "@/lib/db";
@@ -27,8 +28,9 @@ export default function DashboardPage() {
   // Active bill being edited in Center Workbench
   const [currentExpense, setCurrentExpense] = useState<ExpenseRecord | null>(null);
 
-  // Settlement QR Modal state
+  // Settlement QR Modal & Export Modal state
   const [activeDebtModal, setActiveDebtModal] = useState<SimplifiedDebt | null>(null);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Local Memory stats & reactive IndexedDB hook
   const {
@@ -268,7 +270,7 @@ export default function DashboardPage() {
         userUpiId={userUpiId}
         onUpdateUserUpiId={setUserUpiId}
         onClearData={handleClearData}
-        onExportJson={handleExportJson}
+        onOpenExportModal={() => setIsExportModalOpen(true)}
       />
 
       {/* Main 3-Column Responsive Workspace */}
@@ -325,6 +327,14 @@ export default function DashboardPage() {
           onMarkSettled={handleMarkDebtSettled}
         />
       )}
+
+      {/* Easy-to-Read Statement Export Modal */}
+      <ExportLedgerModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        expenses={expenses}
+        members={members}
+      />
     </div>
   );
 }
