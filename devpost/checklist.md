@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Open http://localhost:3000, click a simulated WhatsApp notification or paste a chat snippet, and see it immediately load into active state.
   Commit: `Build PrivacyShieldHeader and AutoIngestStream with clipboard auto-capture`
 
-- [ ] **3. SplitWorkbench (Interactive line items, member avatar toggles, proportional tax/tip lock)**
+- [x] **3. SplitWorkbench (Interactive line items, member avatar toggles, proportional tax/tip lock)**
   Becomes usable: The center interactive table where line items, quantities, and prices appear. Clicking member avatar chips (`[You]`, `[R]`, `[P]`, `[A]`) assigns shares dynamically, recalculates proportional tax and tip without penny errors, and saves the verified expense to local IndexedDB.
   Why now: Delivers the core line-item allocation experience.
   PRD ref: `prd.md > Features and Behavior > 2. Participant Management`, `prd.md > 3. Proportional Tax & Tip Mathematical Distribution`
